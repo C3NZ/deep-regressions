@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from keras.layers.core import Activation, Dense, Dropout
 from keras.models import Sequential
+from keras.utils import np_utils
 from sklearn.datasets import load_boston
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
@@ -64,7 +65,32 @@ def linear_regression():
 
 
 def logistic_regression():
-    pass
+    dataframe = pd.read_csv("diabetes.csv")
+    scaler = MinMaxScaler()
+
+    X_train, X_test, Y_train, Y_test = get_train_test(dataframe)
+
+    model = Sequential()
+    model.add(Dense(16, input_dim=8))
+    model.add(Activation("sigmoid"))
+    model.add(Dense(8))
+    model.add(Dropout(0.1))
+    model.add(Activation("sigmoid"))
+    model.add(Dense(2))
+    model.add(Activation("softmax"))
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    print(X_train)
+    model.fit(
+        scaler.fit_transform(X_train),
+        np_utils.to_categorical(Y_train),
+        epochs=200,
+        batch_size=1,
+        verbose=1,
+    )
+    loss, accuracy = model.evaluate(
+        scaler.fit_transform(X_test), np_utils.to_categorical(Y_test)
+    )
+    print(f"Accuracy = {accuracy}")
 
 
-linear_regression()
+logistic_regression()
