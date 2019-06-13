@@ -72,6 +72,17 @@ def simple_linear_regression():
     print(f"r2 score for LR model: {r2_score(lr.predict(X_test), Y_test)}")
 
 
+def simple_logistic_regression():
+    """
+    """
+    dataframe = pd.read_csv("diabetes.csv")
+    scaler = MinMaxScaler()
+
+    X_train, X_test, Y_train, Y_test = get_train_test(dataframe)
+
+    pass
+
+
 def complex_linear_regression():
     """
         Create a complex linear regression model.
