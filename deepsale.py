@@ -29,9 +29,9 @@ def get_train_test(bos_df: pd.DataFrame) -> tuple:
 
 
 def get_bos_df() -> pd.DataFrame:
-    '''
+    """
         Obtain the boston dataframe.
-    '''
+    """
     boston_data = load_boston()
     bos_df = pd.DataFrame(boston_data.data)
     bos_df.columns = boston_data.feature_names
@@ -41,34 +41,41 @@ def get_bos_df() -> pd.DataFrame:
 
 
 def simple_linear_regression():
-    '''
+    """
         Create our simple linear regression model.
-    '''
+    """
+    # Obtain the boston df
     bos_df = get_bos_df()
     scaler = MinMaxScaler()
 
+    # Obtain training and testing data (Apply scaling as well)
     X_train, X_test, Y_train, Y_test = get_train_test(bos_df)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.fit_transform(X_test)
 
+    # Create the NN and train it
     model = Sequential()
     model.add(Dense(1, input_dim=13, activation="linear"))
     model.compile(optimizer="adam", loss="mse", metrics=["mse", "mae"])
-    model.fit(
-        scaler.fit_transform(X_train), Y_train, epochs=200, batch_size=1, verbose=1
-    )
+    model.fit(X_train, Y_train, epochs=400, batch_size=1, verbose=1)
 
+    # Create the LR and train it
     lr = LinearRegression()
-    lr.fit(scaler.fit_transform(X_train), Y_train)
+    lr.fit(X_train, Y_train)
 
-    loss, mse, mae = model.evaluate(scaler.fit_transform(X_test), Y_test, verbose=0)
-    sklearn_mse = 
+    # Compare results of both models
+    loss, mse, mae = model.evaluate(X_test, Y_test, verbose=0)
+    sklearn_mse = mean_squared_error(lr.predict(X_test), Y_test)
     print(f"MSE for Keras NN: {mse}")
-    print(f"MSE for LR model: {}")
+    print(f"MSE for LR model: {sklearn_mse}")
+    print(f"r2 score for Keras NN: {r2_score(model.predict(X_test), Y_test)}")
+    print(f"r2 score for LR model: {r2_score(lr.predict(X_test), Y_test)}")
 
 
 def complex_linear_regression():
-    '''
+    """
         Create a complex linear regression model.
-    '''
+    """
 
     bos_df = get_bos_df()
     scaler = MinMaxScaler()
@@ -97,9 +104,9 @@ def complex_linear_regression():
 
 
 def complex_logistic_regression():
-    '''
+    """
         Create our complex logistic regression model.
-    '''
+    """
     dataframe = pd.read_csv("diabetes.csv")
     scaler = MinMaxScaler()
 
@@ -128,4 +135,4 @@ def complex_logistic_regression():
     print(f"Accuracy = {accuracy}")
 
 
-logistic_regression()
+simple_linear_regression()
