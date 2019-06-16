@@ -7,8 +7,8 @@ from keras.layers.core import Activation, Dense, Dropout
 from keras.models import Sequential
 from keras.utils import np_utils
 from sklearn.datasets import load_boston
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
@@ -40,7 +40,7 @@ def get_bos_df() -> pd.DataFrame:
     return bos_df
 
 
-def simple_linear_regression():
+def simple_linear_regression() -> None:
     """
         Create our simple linear regression model.
     """
@@ -72,18 +72,38 @@ def simple_linear_regression():
     print(f"r2 score for LR model: {r2_score(lr.predict(X_test), Y_test)}")
 
 
-def simple_logistic_regression():
+def simple_logistic_regression() -> None:
     """
+        Create our simple logistic regression models and compare
     """
+    # Obtain our data
     dataframe = pd.read_csv("diabetes.csv")
     scaler = MinMaxScaler()
 
+    # Obtain our training and testing split
     X_train, X_test, Y_train, Y_test = get_train_test(dataframe)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
-    pass
+    # Create the linear regression model
+    model = Sequential()
+    model.add(Dense(2, input_dim=8, activation="softmax"))
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    model.fit(
+        X_train, np_utils.to_categorical(Y_train), epochs=200, batch_size=1, verbose=1
+    )
+
+    # Create and fit our logistic regression
+    lr = LogisticRegression()
+    lr.fit(X_train, Y_train)
+
+    # Measure the performance of both the keras NN and sklearns model
+    loss, accuracy = model.evaluate(X_test, np_utils.to_categorical(Y_test), verbose=0)
+    print(f"Keras NN accuracy: {accuracy}")
+    print(f"Sklearn accuracy: {accuracy_score(lr.predict(X_test), Y_test)}")
 
 
-def complex_linear_regression():
+def complex_linear_regression() -> None:
     """
         Create a complex linear regression model.
     """
@@ -92,6 +112,8 @@ def complex_linear_regression():
     scaler = MinMaxScaler()
 
     X_train, X_test, Y_train, Y_test = get_train_test(bos_df)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     model = Sequential()
     model.add(Dense(18, input_dim=13))
@@ -105,16 +127,15 @@ def complex_linear_regression():
     model.add(Dense(1))
     model.add(Activation("linear"))
     model.compile(optimizer="adam", loss="mse", metrics=["mse", "mae"])
-    model.fit(
-        scaler.fit_transform(X_train), Y_train, epochs=200, batch_size=1, verbose=1
-    )
-    loss, mse, mae = model.evaluate(scaler.fit_transform(X_test), Y_test, verbose=0)
+    model.fit(X_train, Y_train, epochs=200, batch_size=1, verbose=1)
+
+    loss, mse, mae = model.evaluate(X_test, Y_test, verbose=0)
     print(f"MSE = {mse}")
     print(f"MAE = {mae}")
-    print(f"r^2 = {r2_score(model.predict(scaler.fit_transform(X_test)), Y_test)}")
+    print(f"r^2 = {r2_score(model.predict(X_test), Y_test)}")
 
 
-def complex_logistic_regression():
+def complex_logistic_regression() -> None:
     """
         Create our complex logistic regression model.
     """
